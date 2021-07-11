@@ -35,6 +35,17 @@ title('spike count rate histogram','interpreter','latex');
 
 % neurons with SCR less than 2
 lessThanTwoSCRsNeuronCodes = nameVector(find(SCR<2))
+
+% load msq1D stimulus
+msq1D = load('Data\Stimulus_Files\msq1D.mat');
+stimuliExtracted = []
+for i=1:length(nameVector)
+    msq1Dstruct = Func_ReadData(nameVector(i));
+    for j=1:length(msq1Dstruct)
+        Func_StimuliExtraction(msq1Dstruct(j).events,msq1D);
+    end
+end
+
 %% functions
 function outputStruct = Func_ReadData(neuronCode)
     % output directory
@@ -60,3 +71,7 @@ function SCR = plotSpikeCountRate(neuronCode,msq1Dstruct,T,numberOfFrames)
     SCR = SCR/(length(msq1Dstruct)*T*numberOfFrames);
 end
 
+function Func_StimuliExtraction(events,msq1D)
+
+
+end
