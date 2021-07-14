@@ -90,10 +90,23 @@ figure;
 h1 = histogram(spikeTriggeredImage/spikeTriggeredAveragedSize,nbins,'Normalization','probability')
 hold on
 h2 = histogram(allStimulusImage/spikeTriggeredAveragedSize,nbins,'Normalization','probability')
-title('P Value - 000412.a01emsq1D','interpreter','latex');
 legend('Control','Spike');
 hold off
 
+%3-4
+%3-4
+pTest2 = zeros(16,16);
+for i = 1:16
+    for j = 1:16
+        [h2,pTest2(i,j)] = ttest2(stimuliExtracted(i,j,:),normalStimulus(i,j,:));
+    end
+end
+figure;
+subplot(1,2,1)
+imshow(mat2gray(pTest2));
+title('P Value - Spike triggered averages and All spikes','interpreter','latex');
+xlabel('Spatial');
+ylabel('Temporal');
 
 
 %4-1
@@ -164,6 +177,34 @@ plot(1:30,upperBorder);
 plot(1:30,lowerBorder);
 xlabel('Rank');
 ylabel('EigenValues');
+
+%4-4
+for i = 1:(numberOfFrames+1)/(16)
+    allStimulusImageOnEigenVector1(i) = sum(normalStimulus(:,:,i).*eigVectors(end),'all');
+end
+
+for i = 1:size(stimuliExtracted,3)
+    spikeTriggeredImageOnEigenVector1(i) = sum(stimuliExtracted(:,:,i).*eigVectors(end),'all');
+end
+
+for i = 1:(numberOfFrames+1)/(16)
+    allStimulusImageOnEigenVector2(i) = sum(normalStimulus(:,:,i).*eigVectors(end-1),'all');
+end
+
+for i = 1:size(stimuliExtracted,3)
+    spikeTriggeredImageOnEigenVector2(i) = sum(stimuliExtracted(:,:,i).*eigVectors(end-1),'all');
+end
+
+
+
+nbins = 25;
+figure;
+histogram2(spikeTriggeredImageOnEigenVector1,spikeTriggeredImageOnEigenVector2,'Normalization','probability')
+hold on
+histogram2(allStimulusImageOnEigenVector1,allStimulusImageOnEigenVector2,'Normalization','probability')
+title('P Value - 000412.a01emsq1D','interpreter','latex');
+legend('Spike','Control');
+hold off
 
 %% functions
 function outputStruct = Func_ReadData(neuronCode)
