@@ -14,7 +14,7 @@ T = 1/59.721395; % s
 % all neurons name vector
 nameVector = ["000412.a01","000413.b03","000413.b04","000413.b05",...
     "000418.a01","000419.a06","000419.a07","000419.a09","000420.b02",...
-    "000503.a03","000511.b9","000511.b10","000513.d11","000524.c01","000525.d05",...
+    "000503.a03","000511.b09","000511.b10","000513.d11","000524.c01","000525.d05",...
     "000601.c05","000601.c07","000620.a02","000622.f03","000622.f04",...
     "000622.f05","000712.b03","000712.b04","000720.c06","000802.c05",...
     "000802.c06","000802.c07","000804.i01","000823.d04","000824.g04",...
@@ -48,15 +48,12 @@ msq1D = load('Data\Stimulus_Files\msq1D.mat').msq1D;
 neuronCode = nameVector(1);
 experimentID = "a01emsq1D";
 msq1Dprime = vertcat(msq1D,zeros(1,16));
-stimuliExtracted = Func_StimuliExtraction(neuronCode,experimentID,msq1Dprime,T);
+[targetExperiment stimuliExtracted] = Func_StimuliExtraction(neuronCode,experimentID,msq1Dprime,T,0,0);
 
 
 
 %part 3-1
 figure;
-arbitraryNeuron = nameVector(1);
-experimentID = "a01emsq1D";
-stimuliExtracted = Func_StimuliExtraction(neuronCode,experimentID,msq1Dprime,T);
 spikeTriggeredAveraged = mean(stimuliExtracted,3);
 
 subplot(1,2,1);
@@ -80,7 +77,7 @@ ylabel('Temporal');
 
 %part 3-3
 normalStimulus = reshape(msq1Dprime,16,16,(numberOfFrames+1)/16);
-spikeTriggeredAveragedSize = sqrt(sum(spikeTriggeredAveraged.*spikeTriggeredAveraged,'all')); % check konim
+spikeTriggeredAveragedSize = sqrt(sum(spikeTriggeredAveraged.*spikeTriggeredAveraged,'all')); 
 for i = 1:(numberOfFrames+1)/(16)
     allStimulusImage(i) = sum(normalStimulus(:,:,i).*spikeTriggeredAveraged,'all');
 end
@@ -100,15 +97,9 @@ hold off
 
 
 %4-1
-correlationMatrix = zeros(256,256);
-stimuliExtractedvert = reshape(stimuliExtracted,256,1,[]);
-stimuliExtractedhor = reshape(stimuliExtracted,1,256,[]);
-for i = 1:size(stimuliExtracted,3)
-    correlationMatrix = correlationMatrix + stimuliExtractedvert(:,:,i)*stimuliExtractedhor(:,:,i);
-end
-
-correlationMatrix = correlationMatrix./size(stimuliExtracted,3);
+correlationMatrix = correlationMatrixCalculator(stimuliExtracted);
 [eigVectors,eigValues] = eig(correlationMatrix);
+eigValues = diag(eigValues);
 v1 = reshape(eigVectors(:,end),16,16);
 v2 = reshape(eigVectors(:,end-1),16,16);
 v3 = reshape(eigVectors(:,end-2),16,16);
@@ -128,8 +119,52 @@ title('V3 - 000412.a01emsq1D','interpreter','latex');
 
 
 % 4-2
-[row, col, eigVal] = find(eigValues);
-meanEigValue = mean(eigVal,'all');
+% create 5 random times spikes vector
+controlVec1 = (sort(randperm(floor(numberOfFrames*T*10^4),length(msq1Dstruct(targetExperiment).events)))).';
+controlVec2 = (sort(randperm(floor(numberOfFrames*T*10^4),length(msq1Dstruct(targetExperiment).events)))).';
+controlVec3 = (sort(randperm(floor(numberOfFrames*T*10^4),length(msq1Dstruct(targetExperiment).events)))).';
+controlVec4 = (sort(randperm(floor(numberOfFrames*T*10^4),length(msq1Dstruct(targetExperiment).events)))).';
+controlVec5 = (sort(randperm(floor(numberOfFrames*T*10^4),length(msq1Dstruct(targetExperiment).events)))).';
+
+% simuli extraction
+[targetExperiment stimuliControlExtracted1] = Func_StimuliExtraction(neuronCode,experimentID,msq1Dprime,T,1,controlVec1);
+[targetExperiment stimuliControlExtracted2] = Func_StimuliExtraction(neuronCode,experimentID,msq1Dprime,T,1,controlVec2);
+[targetExperiment stimuliControlExtracted3] = Func_StimuliExtraction(neuronCode,experimentID,msq1Dprime,T,1,controlVec3);
+[targetExperiment stimuliControlExtracted4] = Func_StimuliExtraction(neuronCode,experimentID,msq1Dprime,T,1,controlVec4);
+[targetExperiment stimuliControlExtracted5] = Func_StimuliExtraction(neuronCode,experimentID,msq1Dprime,T,1,controlVec5);
+
+% correlation control matrices
+correlationControlMat1 = correlationMatrixCalculator(stimuliControlExtracted1);
+correlationControlMat2 = correlationMatrixCalculator(stimuliControlExtracted2);
+correlationControlMat3 = correlationMatrixCalculator(stimuliControlExtracted3);
+correlationControlMat4 = correlationMatrixCalculator(stimuliControlExtracted4);
+correlationControlMat5 = correlationMatrixCalculator(stimuliControlExtracted5);
+
+
+% mean of 5 control correlation matrices
+meanCorrelationControlMat = (correlationControlMat1+correlationControlMat2+...
+                             correlationControlMat3+correlationControlMat4+...
+                             correlationControlMat5)./5;
+                              
+% eig values/vectors of mean control correlation matrix
+[eigControlVectors,eigControlValues] = eig(meanCorrelationControlMat);
+eigControlValues = diag(eigControlValues); 
+
+% control confidence interval
+SD = std(eigControlValues);
+upperBorder = eigControlValues(end:-1:end-29) + 43.2*SD/sqrt(256);
+lowerBorder = eigControlValues(end:-1:end-29) - 43.2*SD/sqrt(256);
+
+% 30 most principle eigen values
+figure;
+plot(1:30,eigValues(end:-1:end-29),'.');
+% borders
+hold on;
+plot(1:30,upperBorder);
+plot(1:30,lowerBorder);
+xlabel('Rank');
+ylabel('EigenValues');
+
 %% functions
 function outputStruct = Func_ReadData(neuronCode)
     % output directory
@@ -155,7 +190,7 @@ function SCR = plotSpikeCountRate(neuronCode,msq1Dstruct,T,numberOfFrames)
     SCR = SCR/(length(msq1Dstruct)*T*numberOfFrames);
 end
 
-function stimuliExtraction = Func_StimuliExtraction(neuronCode,experimentID,msq1D,T)
+function [targetExperiment stimuliExtraction] = Func_StimuliExtraction(neuronCode,experimentID,msq1D,T,key,controlVec)
     timeSpan = 10000*16*T;
     msq1Dstruct = Func_ReadData(neuronCode);
     targetExperiment = 0;
@@ -165,11 +200,23 @@ function stimuliExtraction = Func_StimuliExtraction(neuronCode,experimentID,msq1
             break;
         end
     end
-    triggered_stimulus = ceil(msq1Dstruct(targetExperiment).events/timeSpan);
+    if(key == 0)
+        triggered_stimulus = ceil(msq1Dstruct(targetExperiment).events/timeSpan);
+    else
+        triggered_stimulus = ceil(controlVec/timeSpan);
+    end
     stimuliExtraction = zeros(16,16,length(triggered_stimulus));
     for i=1:length(triggered_stimulus)
         stimuliExtraction(:,:,i) = msq1D(((triggered_stimulus(i)-1)*16+1):((triggered_stimulus(i))*16),:);
     end
 end
 
-
+function correlationMat = correlationMatrixCalculator(inputSignal)
+    correlationMat = zeros(256,256);
+    inputSignalvert = reshape(inputSignal,256,1,[]);
+    inputSignalhor = reshape(inputSignal,1,256,[]);
+    for i = 1:size(inputSignal,3)
+        correlationMat = correlationMat + inputSignalvert(:,:,i)*inputSignalhor(:,:,i);
+    end
+    correlationMat = correlationMat./size(inputSignal,3);    
+end
