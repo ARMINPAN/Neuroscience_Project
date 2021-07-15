@@ -57,11 +57,11 @@ msq1Dprime = vertcat(msq1D,zeros(1,16));
 % 2.5 - tview
 % change the input of the tview and the address of the neuron directory for
 % other tview outputrs
-cd C:\Users\Utel\Desktop\Neuroscience_Project\Data\Spike_and_Log_Files\000412.a01
+cd C:\Users\Utel\Desktop\Neuroscience_Project\Data\Spike_and_Log_Files\000412.a01 % change this address depend on your computer 
 tview('000412.a01atune.log');
 cd C:\Users\Utel\Desktop\Neuroscience_Project\
 
-% 3.1
+% 3.1. STA
 figure;
 spikeTriggeredAveraged = mean(stimuliExtracted,3);
 
@@ -71,7 +71,7 @@ title('STA - 000412.a01emsq1D','interpreter','latex');
 xlabel('Spatial');
 ylabel('Temporal');
 
-%part 3-2
+% 3.2. P-Value
 pTest = zeros(16,16);
 for i = 1:16
     for j = 1:16
@@ -84,7 +84,7 @@ title('P Value - 000412.a01emsq1D','interpreter','latex');
 xlabel('Spatial');
 ylabel('Temporal');
 
-%part 3-3
+% 3.3. histogram
 normalStimulus = reshape(msq1Dprime,16,16,(numberOfFrames+1)/16);
 spikeTriggeredAveragedSize = sqrt(sum(spikeTriggeredAveraged.*spikeTriggeredAveraged,'all')); 
 for i = 1:(numberOfFrames+1)/(16)
@@ -102,7 +102,7 @@ h2 = histogram(allStimulusImage/spikeTriggeredAveragedSize,nbins,'Normalization'
 legend('Control','Spike');
 hold off
 
-%3-4
+% 3.4. p-value
 
 pTest2 = zeros(16,16);
 for i = 1:16
@@ -117,7 +117,7 @@ xlabel('Spatial');
 ylabel('Temporal');
 
 
-%4-1
+% 4.1. correlation matrix
 correlationMatrix = correlationMatrixCalculator(stimuliExtracted);
 [eigVectors,eigValues] = eig(correlationMatrix);
 eigValues = diag(eigValues);
@@ -139,7 +139,7 @@ imshow(mat2gray(v3));
 title('V3 - 000412.a01emsq1D','interpreter','latex');
 
 
-% 4-2
+% 4.2. confidence intervals
 % create 5 random times spikes vector
 controlVec1 = (sort(randperm(floor(numberOfFrames*T*10^4),length(msq1Dstruct(targetExperiment).events)))).';
 controlVec2 = (sort(randperm(floor(numberOfFrames*T*10^4),length(msq1Dstruct(targetExperiment).events)))).';
@@ -194,7 +194,7 @@ ylabel('EigenValues');
 legend('eigenValues','upperBorder','LowerBorder');
 hold off;
 
-%4-4
+% 4.4. histogram
 v1 = reshape(eigVectors(end,:),256,1);
 v2 = reshape(eigVectors(end-1,:),256,1);
 
@@ -218,7 +218,7 @@ hold off
 %% functions
 function outputStruct = Func_ReadData(neuronCode)
     % output directory
-    cd C:\Users\Utel\Desktop\Neuroscience_Project
+    cd C:\Users\Utel\Desktop\Neuroscience_Project % change it to your pc address
     cd Data\Spike_and_Log_Files
     targetFiles = dir('*\'+neuronCode+'*msq1*.sa0');
     outputStruct = struct('events',{},'hdr',{});
