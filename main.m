@@ -195,30 +195,23 @@ legend('eigenValues','upperBorder','LowerBorder');
 hold off;
 
 %4-4
-for i = 1:(numberOfFrames+1)/(16)
-    allStimulusImageOnEigenVector1(i) = sum(normalStimulus(:,:,i).*eigVectors(end),'all');
-end
+v1 = reshape(eigVectors(end,:),256,1);
+v2 = reshape(eigVectors(end-1,:),256,1);
 
-for i = 1:size(stimuliExtracted,3)
-    spikeTriggeredImageOnEigenVector1(i) = sum(stimuliExtracted(:,:,i).*eigVectors(end),'all');
-end
+stimuliExtracted = reshape(stimuliExtracted,[],256);
+spikeTriggeredImageOnEigenVector1 = (stimuliExtracted)*v1;
+spikeTriggeredImageOnEigenVector2 = (stimuliExtracted)*v2;
+normalStimulus = reshape(normalStimulus,[],256);
+allStimulusImageOnEigenVector1 = normalStimulus*v1;
+allStimulusImageOnEigenVector2 = normalStimulus*v2;
 
-for i = 1:(numberOfFrames+1)/(16)
-    allStimulusImageOnEigenVector2(i) = sum(normalStimulus(:,:,i).*eigVectors(end-1),'all');
-end
-
-for i = 1:size(stimuliExtracted,3)
-    spikeTriggeredImageOnEigenVector2(i) = sum(stimuliExtracted(:,:,i).*eigVectors(end-1),'all');
-end
-
-
-
-nbins = 25;
 figure;
 histogram2(spikeTriggeredImageOnEigenVector1,spikeTriggeredImageOnEigenVector2,'Normalization','probability')
 hold on
 histogram2(allStimulusImageOnEigenVector1,allStimulusImageOnEigenVector2,'Normalization','probability')
-title('P Value - 000412.a01emsq1D','interpreter','latex');
+title('000412.a01emsq1D','interpreter','latex');
+xlabel('V1');
+ylabel('V2');
 legend('Spike','Control');
 hold off
 
