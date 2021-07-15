@@ -162,20 +162,25 @@ correlationControlMat3 = correlationMatrixCalculator(stimuliControlExtracted3);
 correlationControlMat4 = correlationMatrixCalculator(stimuliControlExtracted4);
 correlationControlMat5 = correlationMatrixCalculator(stimuliControlExtracted5);
 
+% eig values/vectors of control correlation matrices
+[eigControlVectors1,eigControlValues1] = eig(correlationControlMat1);
+eigControlValues1 = diag(eigControlValues1); 
+[eigControlVectors2,eigControlValues2] = eig(correlationControlMat2);
+eigControlValues2 = diag(eigControlValues2); 
+[eigControlVectors3,eigControlValues3] = eig(correlationControlMat3);
+eigControlValues3 = diag(eigControlValues3); 
+[eigControlVectors4,eigControlValues4] = eig(correlationControlMat4);
+eigControlValues4 = diag(eigControlValues4); 
+[eigControlVectors5,eigControlValues5] = eig(correlationControlMat5);
+eigControlValues5 = diag(eigControlValues5); 
 
-% mean of 5 control correlation matrices
-meanCorrelationControlMat = (correlationControlMat1+correlationControlMat2+...
-                             correlationControlMat3+correlationControlMat4+...
-                             correlationControlMat5)./5;
-                              
-% eig values/vectors of mean control correlation matrix
-[eigControlVectors,eigControlValues] = eig(meanCorrelationControlMat);
-eigControlValues = diag(eigControlValues); 
+meanEigControlValues = (eigControlValues1+eigControlValues2+eigControlValues3+...
+    eigControlValues4+eigControlValues5)./5;
 
 % control confidence interval
-SD = std(eigControlValues);
-upperBorder = eigControlValues(end:-1:end-29) + 43.2*SD/sqrt(256);
-lowerBorder = eigControlValues(end:-1:end-29) - 43.2*SD/sqrt(256);
+SD = std(meanEigControlValues);
+upperBorder = meanEigControlValues(end:-1:end-29) + 10.4*SD/sqrt(256);
+lowerBorder = meanEigControlValues(end:-1:end-29) - 10.4*SD/sqrt(256);
 
 % 30 most principle eigen values
 figure;
