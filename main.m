@@ -111,7 +111,6 @@ for i = 1:16
     end
 end
 figure;
-subplot(1,2,1)
 imshow(mat2gray(pTest2));
 title('P Value - Spike triggered averages and All spikes','interpreter','latex');
 xlabel('Spatial');
@@ -179,8 +178,9 @@ meanEigControlValues = (eigControlValues1+eigControlValues2+eigControlValues3+..
 
 % control confidence interval
 SD = std(meanEigControlValues);
-upperBorder = meanEigControlValues(end:-1:end-29) + 10.4*SD/sqrt(256);
-lowerBorder = meanEigControlValues(end:-1:end-29) - 10.4*SD/sqrt(256);
+z = 10.4; % change z if you changed the neuron and expirement for better results
+upperBorder = meanEigControlValues(end:-1:end-29) + z*SD/sqrt(256);
+lowerBorder = meanEigControlValues(end:-1:end-29) - z*SD/sqrt(256);
 
 % 30 most principle eigen values
 figure;
@@ -191,6 +191,8 @@ plot(1:30,upperBorder);
 plot(1:30,lowerBorder);
 xlabel('Rank');
 ylabel('EigenValues');
+legend('eigenValues','upperBorder','LowerBorder');
+hold off;
 
 %4-4
 for i = 1:(numberOfFrames+1)/(16)
