@@ -6,6 +6,7 @@
 close all; clc; clear;
 addpath('MatlabFunctions\fileload');
 addpath('MatlabFunctions\tview');
+addpath('Data\Spike_and_Log_Files');
 % part.1 - Dataset
 % sa0 files
 numberOfFrames = 32767;
@@ -26,11 +27,11 @@ nameVector = ["000412.a01","000413.b03","000413.b04","000413.b05",...
     "020214.A.j01","020306.A.a01","020306.A.a02","020308.A.d01","020321.A.i01",...
     "020321.A.i02"];
 
-% specified neuron - hdr and events - msq1D - sa0
+% 2.2 - specified neuron - hdr and events - msq1D - sa0
 neuronCode = nameVector(1); % change the index for other neurons
 msq1Dstruct = Func_ReadData(neuronCode)
 
-% spike count rate - histogram
+% 2.3 - spike count rate - histogram
 SCR = [];
 for i=1:length(nameVector)
     SCR = [SCR plotSpikeCountRate(nameVector(i),Func_ReadData(nameVector(i)),T,numberOfFrames)];
@@ -41,18 +42,26 @@ bar(X,SCR.','FaceColor','#A2142F','EdgeColor','#A2142F');
 title('spike count rate histogram','interpreter','latex');
 
 % neurons with SCR less than 2
-lessThanTwoSCRsNeuronCodes = nameVector(find(SCR<2))
+lessThanTwoSCRsNeuronCodes = (nameVector(find(SCR<2))).'
+hold on;
+line([X(1) X(61)],[2 2],'Color','blue','LineStyle','--','LineWidth',2); % border
+hold off;
 
-% load msq1D stimulus
+% 2.4 - load msq1D stimulus
 msq1D = load('Data\Stimulus_Files\msq1D.mat').msq1D;
 neuronCode = nameVector(1);
 experimentID = "a01emsq1D";
 msq1Dprime = vertcat(msq1D,zeros(1,16));
 [targetExperiment stimuliExtracted] = Func_StimuliExtraction(neuronCode,experimentID,msq1Dprime,T,0,0);
 
+% 2.5 - tview
+% change the input of the tview and the address of the neuron directory for
+% other tview outputrs
+cd C:\Users\Utel\Desktop\Neuroscience_Project\Data\Spike_and_Log_Files\000412.a01
+tview('000412.a01atune.log');
+cd C:\Users\Utel\Desktop\Neuroscience_Project\
 
-
-%part 3-1
+% 3.1
 figure;
 spikeTriggeredAveraged = mean(stimuliExtracted,3);
 
@@ -94,7 +103,7 @@ legend('Control','Spike');
 hold off
 
 %3-4
-%3-4
+
 pTest2 = zeros(16,16);
 for i = 1:16
     for j = 1:16
@@ -261,3 +270,5 @@ function correlationMat = correlationMatrixCalculator(inputSignal)
     end
     correlationMat = correlationMat./size(inputSignal,3);    
 end
+
+
